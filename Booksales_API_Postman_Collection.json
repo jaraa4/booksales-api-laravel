@@ -1,0 +1,323 @@
+{
+  "info": {
+    "_postman_id": "c1f72d4e-862a-4a62-b918-a8bf3df07b9a",
+    "name": "Booksales API - Full CRUD (Genre & Author)",
+    "description": "Koleksi Postman lengkap untuk pengujian API CRUD (Index, Store, Show, Update, Destroy) dan penanganan 404 Not Found pada tabel Genre dan Author.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Genre",
+      "item": [
+        {
+          "name": "1. Read All Genres (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres"]
+            },
+            "description": "Mengambil semua data genre dari database."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Create Genre (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Komik & Manga\",\n  \"description\": \"Genre buku bergambar dengan alur visual menarik\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres"]
+            },
+            "description": "Menambahkan data genre baru ke database."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Show Genre by ID (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "1"]
+            },
+            "description": "Mengambil detail genre berdasarkan ID."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Show Genre Not Found (GET - 404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/genres/9999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "9999"]
+            },
+            "description": "Menguji respon ketika data genre tidak ditemukan (status 404)."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Update Genre (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fiksi Ilmiah Terkini\",\n  \"description\": \"Genre fiksi ilmiah versi pembaruan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "1"]
+            },
+            "description": "Memperbarui data genre berdasarkan ID."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Destroy Genre (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "1"]
+            },
+            "description": "Menghapus data genre berdasarkan ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Author",
+      "item": [
+        {
+          "name": "7. Read All Authors (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors"]
+            },
+            "description": "Mengambil semua data author dari database."
+          },
+          "response": []
+        },
+        {
+          "name": "8. Create Author (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Habiburrahman El Shirazy\",\n  \"email\": \"kang.abik@bookstore.id\",\n  \"country\": \"Indonesia\",\n  \"bio\": \"Penulis novel mega-bestseller Ayat-Ayat Cinta.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/authors",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors"]
+            },
+            "description": "Menambahkan data author baru ke database."
+          },
+          "response": []
+        },
+        {
+          "name": "9. Show Author by ID (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "1"]
+            },
+            "description": "Mengambil detail author berdasarkan ID."
+          },
+          "response": []
+        },
+        {
+          "name": "10. Show Author Not Found (GET - 404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors/9999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "9999"]
+            },
+            "description": "Menguji respon ketika data author tidak ditemukan (status 404)."
+          },
+          "response": []
+        },
+        {
+          "name": "11. Update Author (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Andrea Hirata Seman\",\n  \"email\": \"andrea.hirata@bookstore.id\",\n  \"country\": \"Indonesia\",\n  \"bio\": \"Penulis Laskar Pelangi edisi diperbarui.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/authors/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "1"]
+            },
+            "description": "Memperbarui data author berdasarkan ID."
+          },
+          "response": []
+        },
+        {
+          "name": "12. Destroy Author (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "1"]
+            },
+            "description": "Menghapus data author berdasarkan ID."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    }
+  ]
+}
