@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Genre;
 use App\Models\Author;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,6 +18,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Seeder User Admin & Regular User
+        User::updateOrCreate(
+            ['email' => 'admin@bookstore.id'],
+            [
+                'name' => 'Administrator Bookstore',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+                'api_token' => 'admin-secret-token-12345',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'user@bookstore.id'],
+            [
+                'name' => 'Regular User Bookstore',
+                'password' => Hash::make('password123'),
+                'role' => 'user',
+                'api_token' => 'user-secret-token-12345',
+            ]
+        );
+
         // Seeder Genre
         Genre::firstOrCreate(
             ['name' => 'Fiksi Ilmiah'],

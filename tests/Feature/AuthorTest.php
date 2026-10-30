@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Author;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -10,13 +11,37 @@ class AuthorTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_read_all_authors(): void
+    private User $adminUser;
+    private User $regularUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->adminUser = User::create([
+            'name' => 'Admin Test',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+            'api_token' => 'admin-test-token-author',
+        ]);
+
+        $this->regularUser = User::create([
+            'name' => 'Regular User Test',
+            'email' => 'user@test.com',
+            'password' => bcrypt('password123'),
+            'role' => 'user',
+            'api_token' => 'user-test-token-author',
+        ]);
+    }
+
+    public function test_public_user_can_read_all_authors(): void
     {
         Author::create([
             'name' => 'Andrea Hirata',
-            'email' => 'andrea@bookstore.id',
+            'email' => 'andrea@test.com',
             'country' => 'Indonesia',
-            'bio' => 'Penulis novel Laskar Pelangi',
+            'bio' => 'Penulis Laskar Pelangi',
         ]);
 
         $response = $this->getJson('/api/authors');
@@ -31,40 +56,13 @@ class AuthorTest extends TestCase
             ]);
     }
 
-    public function test_can_create_author(): void
-    {
-        $payload = [
-            'name' => 'Tere Liye',
-            'email' => 'tere.liye@bookstore.id',
-            'country' => 'Indonesia',
-            'bio' => 'Penulis novel terkenal Indonesia',
-        ];
-
-        $response = $this->postJson('/api/authors', $payload);
-
-        $response->assertStatus(201)
-            ->assertJson([
-                'status' => 'success',
-                'message' => 'Author berhasil ditambahkan',
-                'data' => [
-                    'name' => 'Tere Liye',
-                    'email' => 'tere.liye@bookstore.id',
-                ]
-            ]);
-
-        $this->assertDatabaseHas('authors', [
-            'name' => 'Tere Liye',
-            'email' => 'tere.liye@bookstore.id',
-        ]);
-    }
-
-    public function test_can_show_author(): void
+    public function test_public_user_can_show_author(): void
     {
         $author = Author::create([
-            'name' => 'Pramoedya Ananta Toer',
-            'email' => 'pramoedya@bookstore.id',
+            'name' => 'Tere Liye',
+            'email' => 'tereliye@test.com',
             'country' => 'Indonesia',
-            'bio' => 'Sastrawan Indonesia',
+            'bio' => 'Penulis Produktif',
         ]);
 
         $response = $this->getJson("/api/authors/{$author->id}");
@@ -75,7 +73,7 @@ class AuthorTest extends TestCase
                 'message' => 'Data author berhasil ditemukan',
                 'data' => [
                     'id' => $author->id,
-                    'name' => 'Pramoedya Ananta Toer',
+                    'name' => 'Tere Liye',
                 ]
             ]);
     }
@@ -91,21 +89,97 @@ class AuthorTest extends TestCase
             ]);
     }
 
-    public function test_can_update_author(): void
+    public function test_unauthenticated_user_cannot_create_author(): void
+    {
+        $payload = [
+            'name' => 'Pramoedya',
+            'email' => 'pram@test.com',
+        ];
+
+        $response = $this->postJson('/api/authors', $payload);
+
+        $response->assertStatus(401);
+    }
+
+    public function test_regular_user_cannot_create_author(): void
+    {
+        $payload = [
+            'name' => 'Pramoedya',
+            'email' => 'pram@test.com',
+        ];
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->regularUser->api_token)
+            ->postJson('/api/authors', $payload);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_user_can_create_author(): void
+    {
+        $payload = [
+            'name' => 'Pramoedya Ananta Toer',
+            'email' => 'pram@bookstore.id',
+            'country' => 'Indonesia',
+            'bio' => 'Sastrawan Besar',
+        ];
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->adminUser->api_token)
+            ->postJson('/api/authors', $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'status' => 'success',
+                'message' => 'Author berhasil ditambahkan',
+                'data' => [
+                    'name' => 'Pramoedya Ananta Toer',
+                ]
+            ]);
+
+        $this->assertDatabaseHas('authors', [
+            'name' => 'Pramoedya Ananta Toer',
+        ]);
+    }
+
+    public function test_unauthenticated_user_cannot_update_author(): void
     {
         $author = Author::create([
-            'name' => 'Nama Lama',
-            'email' => 'lama@bookstore.id',
-            'country' => 'Indonesia',
-            'bio' => 'Bio lama',
+            'name' => 'Penulis Lama',
+        ]);
+
+        $response = $this->putJson("/api/authors/{$author->id}", [
+            'name' => 'Penulis Baru',
+        ]);
+
+        $response->assertStatus(401);
+    }
+
+    public function test_regular_user_cannot_update_author(): void
+    {
+        $author = Author::create([
+            'name' => 'Penulis Lama',
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->regularUser->api_token)
+            ->putJson("/api/authors/{$author->id}", [
+                'name' => 'Penulis Baru',
+            ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_user_can_update_author(): void
+    {
+        $author = Author::create([
+            'name' => 'Penulis Lama',
         ]);
 
         $payload = [
-            'name' => 'Nama Baru',
-            'email' => 'baru@bookstore.id',
+            'name' => 'Penulis Baru Diupdate',
+            'bio' => 'Bio baru',
         ];
 
-        $response = $this->putJson("/api/authors/{$author->id}", $payload);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->adminUser->api_token)
+            ->putJson("/api/authors/{$author->id}", $payload);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -113,23 +187,22 @@ class AuthorTest extends TestCase
                 'message' => 'Data author berhasil diperbarui',
                 'data' => [
                     'id' => $author->id,
-                    'name' => 'Nama Baru',
-                    'email' => 'baru@bookstore.id',
+                    'name' => 'Penulis Baru Diupdate',
                 ]
             ]);
 
         $this->assertDatabaseHas('authors', [
             'id' => $author->id,
-            'name' => 'Nama Baru',
-            'email' => 'baru@bookstore.id',
+            'name' => 'Penulis Baru Diupdate',
         ]);
     }
 
-    public function test_update_author_not_found_returns_404(): void
+    public function test_admin_update_author_not_found_returns_404(): void
     {
-        $response = $this->putJson('/api/authors/99999', [
-            'name' => 'Tidak Ada',
-        ]);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->adminUser->api_token)
+            ->putJson('/api/authors/99999', [
+                'name' => 'Tidak Ada',
+            ]);
 
         $response->assertStatus(404)
             ->assertJson([
@@ -138,14 +211,37 @@ class AuthorTest extends TestCase
             ]);
     }
 
-    public function test_can_destroy_author(): void
+    public function test_unauthenticated_user_cannot_destroy_author(): void
     {
         $author = Author::create([
             'name' => 'Author Hapus',
-            'email' => 'hapus@bookstore.id',
         ]);
 
         $response = $this->deleteJson("/api/authors/{$author->id}");
+
+        $response->assertStatus(401);
+    }
+
+    public function test_regular_user_cannot_destroy_author(): void
+    {
+        $author = Author::create([
+            'name' => 'Author Hapus',
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->regularUser->api_token)
+            ->deleteJson("/api/authors/{$author->id}");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_user_can_destroy_author(): void
+    {
+        $author = Author::create([
+            'name' => 'Author Hapus',
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->adminUser->api_token)
+            ->deleteJson("/api/authors/{$author->id}");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -158,9 +254,10 @@ class AuthorTest extends TestCase
         ]);
     }
 
-    public function test_destroy_author_not_found_returns_404(): void
+    public function test_admin_destroy_author_not_found_returns_404(): void
     {
-        $response = $this->deleteJson('/api/authors/99999');
+        $response = $this->withHeader('Authorization', 'Bearer ' . $this->adminUser->api_token)
+            ->deleteJson('/api/authors/99999');
 
         $response->assertStatus(404)
             ->assertJson([

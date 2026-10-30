@@ -1,323 +1,516 @@
 {
   "info": {
-    "_postman_id": "c1f72d4e-862a-4a62-b918-a8bf3df07b9a",
-    "name": "Booksales API - Full CRUD (Genre & Author)",
-    "description": "Koleksi Postman lengkap untuk pengujian API CRUD (Index, Store, Show, Update, Destroy) dan penanganan 404 Not Found pada tabel Genre dan Author.",
+    "_postman_id": "a91d24c0-43ef-4b47-b352-789a1bcdef01",
+    "name": "Booksales API - Middleware & Role-Based Access Control",
+    "description": "Koleksi Postman untuk pengujian Middleware, Hak Akses Public (Read All & Show), dan Hak Akses Admin (Create, Update, Destroy) pada resource Genre dan Author serta Autentikasi Token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "admin-secret-token-12345",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "user-secret-token-12345",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Genre",
+      "name": "1. Autentikasi (Authentication)",
       "item": [
         {
-          "name": "1. Read All Genres (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/genres",
-              "host": ["{{base_url}}"],
-              "path": ["api", "genres"]
-            },
-            "description": "Mengambil semua data genre dari database."
-          },
-          "response": []
-        },
-        {
-          "name": "2. Create Genre (POST)",
+          "name": "1.1 Register User (Role User)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Komik & Manga\",\n  \"description\": \"Genre buku bergambar dengan alur visual menarik\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"name\": \"Pembaca Buku\",\n  \"email\": \"pembaca@bookstore.id\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
             },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Mendaftarkan user baru dengan role regular 'user'."
+          }
+        },
+        {
+          "name": "1.2 Register Admin (Role Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Baru\",\n  \"email\": \"admin.baru@bookstore.id\",\n  \"password\": \"password123\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Mendaftarkan user baru dengan role 'admin'."
+          }
+        },
+        {
+          "name": "1.3 Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('admin_token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bookstore.id\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Login sebagai Admin untuk mendapatkan admin bearer token."
+          }
+        },
+        {
+          "name": "1.4 Login Regular User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('user_token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@bookstore.id\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Login sebagai regular user untuk mendapatkan user token non-admin."
+          }
+        },
+        {
+          "name": "1.5 Get Current User Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "Melihat data user yang sedang aktif."
+          }
+        },
+        {
+          "name": "1.6 Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logout"]
+            },
+            "description": "Menghapus session token user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Public Routes (Semua Orang - Tanpa Autentikasi)",
+      "item": [
+        {
+          "name": "2.1 Read All Genres (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
             "url": {
               "raw": "{{base_url}}/api/genres",
               "host": ["{{base_url}}"],
               "path": ["api", "genres"]
             },
-            "description": "Menambahkan data genre baru ke database."
-          },
-          "response": []
+            "description": "Dapat diakses oleh siapa pun tanpa token/autentikasi (HTTP 200)."
+          }
         },
         {
-          "name": "3. Show Genre by ID (GET)",
+          "name": "2.2 Show Genre by ID (Public)",
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
+              { "key": "Accept", "value": "application/json" }
             ],
             "url": {
               "raw": "{{base_url}}/api/genres/1",
               "host": ["{{base_url}}"],
               "path": ["api", "genres", "1"]
             },
-            "description": "Mengambil detail genre berdasarkan ID."
-          },
-          "response": []
+            "description": "Melihat detail genre tanpa token/autentikasi (HTTP 200)."
+          }
         },
         {
-          "name": "4. Show Genre Not Found (GET - 404)",
+          "name": "2.3 Read All Authors (Public)",
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors"]
+            },
+            "description": "Dapat diakses oleh siapa pun tanpa token/autentikasi (HTTP 200)."
+          }
+        },
+        {
+          "name": "2.4 Show Author by ID (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "1"]
+            },
+            "description": "Melihat detail author tanpa token/autentikasi (HTTP 200)."
+          }
+        },
+        {
+          "name": "2.5 Show Genre Not Found (Public - 404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
             ],
             "url": {
               "raw": "{{base_url}}/api/genres/9999",
               "host": ["{{base_url}}"],
               "path": ["api", "genres", "9999"]
             },
-            "description": "Menguji respon ketika data genre tidak ditemukan (status 404)."
-          },
-          "response": []
-        },
-        {
-          "name": "5. Update Genre (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Fiksi Ilmiah Terkini\",\n  \"description\": \"Genre fiksi ilmiah versi pembaruan\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{base_url}}/api/genres/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "genres", "1"]
-            },
-            "description": "Memperbarui data genre berdasarkan ID."
-          },
-          "response": []
-        },
-        {
-          "name": "6. Destroy Genre (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/genres/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "genres", "1"]
-            },
-            "description": "Menghapus data genre berdasarkan ID."
-          },
-          "response": []
+            "description": "Pengujian data tidak ditemukan (HTTP 404)."
+          }
         }
       ]
     },
     {
-      "name": "Author",
+      "name": "3. Pengujian Middleware (Unauthorized & Forbidden)",
       "item": [
         {
-          "name": "7. Read All Authors (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/authors",
-              "host": ["{{base_url}}"],
-              "path": ["api", "authors"]
-            },
-            "description": "Mengambil semua data author dari database."
-          },
-          "response": []
-        },
-        {
-          "name": "8. Create Author (POST)",
+          "name": "3.1 Create Genre - Tanpa Token (401 Unauthorized)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Habiburrahman El Shirazy\",\n  \"email\": \"kang.abik@bookstore.id\",\n  \"country\": \"Indonesia\",\n  \"bio\": \"Penulis novel mega-bestseller Ayat-Ayat Cinta.\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"name\": \"Manga Ilegal\",\n  \"description\": \"Tanpa login\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres"]
+            },
+            "description": "Harus menghasilkan HTTP 401 Unauthorized karena tidak menyertakan Authorization Bearer token."
+          }
+        },
+        {
+          "name": "3.2 Create Genre - User Non-Admin (403 Forbidden)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Genre User Biasa\",\n  \"description\": \"Dicoba oleh user role non-admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres"]
+            },
+            "description": "Harus menghasilkan HTTP 403 Forbidden karena user terautentikasi bukan berstatus admin."
+          }
+        },
+        {
+          "name": "3.3 Update Genre - Tanpa Token (401 Unauthorized)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Genre Update Tanpa Izin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "1"]
+            },
+            "description": "Harus menghasilkan HTTP 401 Unauthorized."
+          }
+        },
+        {
+          "name": "3.4 Delete Genre - User Non-Admin (403 Forbidden)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "1"]
+            },
+            "description": "Harus menghasilkan HTTP 403 Forbidden."
+          }
+        },
+        {
+          "name": "3.5 Create Author - Tanpa Token (401 Unauthorized)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Penulis Tanpa Izin\",\n  \"email\": \"unauth@bookstore.id\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/authors",
               "host": ["{{base_url}}"],
               "path": ["api", "authors"]
             },
-            "description": "Menambahkan data author baru ke database."
-          },
-          "response": []
+            "description": "Harus menghasilkan HTTP 401 Unauthorized."
+          }
         },
         {
-          "name": "9. Show Author by ID (GET)",
+          "name": "3.6 Create Author - User Non-Admin (403 Forbidden)",
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/authors/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "authors", "1"]
-            },
-            "description": "Mengambil detail author berdasarkan ID."
-          },
-          "response": []
-        },
-        {
-          "name": "10. Show Author Not Found (GET - 404)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/authors/9999",
-              "host": ["{{base_url}}"],
-              "path": ["api", "authors", "9999"]
-            },
-            "description": "Menguji respon ketika data author tidak ditemukan (status 404)."
-          },
-          "response": []
-        },
-        {
-          "name": "11. Update Author (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              }
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Andrea Hirata Seman\",\n  \"email\": \"andrea.hirata@bookstore.id\",\n  \"country\": \"Indonesia\",\n  \"bio\": \"Penulis Laskar Pelangi edisi diperbarui.\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"name\": \"Penulis Non-Admin\",\n  \"email\": \"userbiasa@bookstore.id\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/authors/1",
+              "raw": "{{base_url}}/api/authors",
               "host": ["{{base_url}}"],
-              "path": ["api", "authors", "1"]
+              "path": ["api", "authors"]
             },
-            "description": "Memperbarui data author berdasarkan ID."
-          },
-          "response": []
+            "description": "Harus menghasilkan HTTP 403 Forbidden."
+          }
         },
         {
-          "name": "12. Destroy Author (DELETE)",
+          "name": "3.7 Delete Author - Tanpa Token (401 Unauthorized)",
           "request": {
             "method": "DELETE",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
+              { "key": "Accept", "value": "application/json" }
             ],
             "url": {
               "raw": "{{base_url}}/api/authors/1",
               "host": ["{{base_url}}"],
               "path": ["api", "authors", "1"]
             },
-            "description": "Menghapus data author berdasarkan ID."
-          },
-          "response": []
+            "description": "Harus menghasilkan HTTP 401 Unauthorized."
+          }
         }
       ]
-    }
-  ],
-  "variable": [
+    },
     {
-      "key": "base_url",
-      "value": "http://127.0.0.1:8000",
-      "type": "string"
+      "name": "4. Fitur Admin - CRUD Genre (Hanya Admin)",
+      "item": [
+        {
+          "name": "4.1 Create Genre - Admin (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Komik & Manga\",\n  \"description\": \"Genre buku bergambar dengan alur visual menarik\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres"]
+            },
+            "description": "Admin berhasil membuat genre baru (HTTP 201)."
+          }
+        },
+        {
+          "name": "4.2 Update Genre - Admin (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Komik & Manga Populer\",\n  \"description\": \"Genre buku bergambar edisi terupdate\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "1"]
+            },
+            "description": "Admin berhasil mengubah data genre (HTTP 200)."
+          }
+        },
+        {
+          "name": "4.3 Delete Genre - Admin (200 OK)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/genres/5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres", "5"]
+            },
+            "description": "Admin berhasil menghapus data genre (HTTP 200)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Fitur Admin - CRUD Author (Hanya Admin)",
+      "item": [
+        {
+          "name": "5.1 Create Author - Admin (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Habiburrahman El Shirazy\",\n  \"email\": \"kang.abik@bookstore.id\",\n  \"country\": \"Indonesia\",\n  \"bio\": \"Novelis nomor 1 Indonesia, penulis Ayat-Ayat Cinta.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/authors",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors"]
+            },
+            "description": "Admin berhasil menambahkan data author (HTTP 201)."
+          }
+        },
+        {
+          "name": "5.2 Update Author - Admin (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Andrea Hirata, M.Sc.\",\n  \"bio\": \"Penulis novel Laskar Pelangi dan penerima berbagai penghargaan internasional.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/authors/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "1"]
+            },
+            "description": "Admin berhasil memperbarui data author (HTTP 200)."
+          }
+        },
+        {
+          "name": "5.3 Delete Author - Admin (200 OK)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/authors/5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors", "5"]
+            },
+            "description": "Admin berhasil menghapus data author (HTTP 200)."
+          }
+        }
+      ]
     }
   ]
 }
