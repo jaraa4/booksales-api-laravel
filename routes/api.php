@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TransaksiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +16,9 @@ use App\Http\Controllers\AuthController;
 |    -> Dapat diakses oleh semua orang tanpa autentikasi (guest/unauthenticated).
 | 3. Protected Routes: Create (store), Update (update), Destroy (destroy)
 |    -> Hanya dapat diakses oleh Admin dengan middleware ['auth.api', 'admin'].
+| 4. Transaksi Routes:
+|    -> Create (store), Update (update), Show (show): Customer terotentikasi ['auth.api']
+|    -> Read All (index), Destroy (destroy): Admin saja ['auth.api', 'admin']
 */
 
 // ==========================================
@@ -53,4 +57,19 @@ Route::middleware(['auth.api', 'admin'])->group(function () {
     Route::post('/authors', [AuthorController::class, 'store']);
     Route::put('/authors/{id}', [AuthorController::class, 'update']);
     Route::delete('/authors/{id}', [AuthorController::class, 'destroy']);
+
+    // Transaksi: Read All & Destroy — hanya Admin
+    Route::get('/transaksis', [TransaksiController::class, 'index']);
+    Route::delete('/transaksis/{id}', [TransaksiController::class, 'destroy']);
+});
+
+// ==========================================
+// 4. ROUTE TRANSAKSI — CUSTOMER TEROTENTIKASI
+// ==========================================
+// Memerlukan valid token ('auth.api'), dapat diakses oleh semua user yang sudah login
+Route::middleware('auth.api')->group(function () {
+    // Transaksi: Create, Show, Update — customer terotentikasi
+    Route::post('/transaksis', [TransaksiController::class, 'store']);
+    Route::get('/transaksis/{id}', [TransaksiController::class, 'show']);
+    Route::put('/transaksis/{id}', [TransaksiController::class, 'update']);
 });

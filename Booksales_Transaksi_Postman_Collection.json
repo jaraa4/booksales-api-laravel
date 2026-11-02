@@ -1,0 +1,393 @@
+{
+  "info": {
+    "_postman_id": "b82e35d1-57fa-4c91-b123-456def789abc",
+    "name": "Booksales API - CRUD Transaksi (Lengkap)",
+    "description": "Koleksi Postman lengkap untuk pengujian CRUD Transaksi Booksales API. Mencakup: Autentikasi, Genre, Author, dan Transaksi dengan role-based access (Customer & Admin).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autentikasi",
+      "item": [
+        {
+          "name": "1.1 Register User (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Zahra Customer\",\n  \"email\": \"zahra@bookstore.id\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Register user baru dengan role 'user' (customer)."
+          }
+        },
+        {
+          "name": "1.2 Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Toko\",\n  \"email\": \"admin@bookstore.id\",\n  \"password\": \"password123\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Register user baru dengan role 'admin'."
+          }
+        },
+        {
+          "name": "1.3 Login Admin → Simpan admin_token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('admin_token', jsonData.data.token);",
+                  "    console.log('admin_token tersimpan: ' + jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bookstore.id\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Login Admin. Token otomatis tersimpan ke variabel {{admin_token}}."
+          }
+        },
+        {
+          "name": "1.4 Login User → Simpan user_token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('user_token', jsonData.data.token);",
+                  "    console.log('user_token tersimpan: ' + jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"zahra@bookstore.id\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Login User (Customer). Token otomatis tersimpan ke variabel {{user_token}}."
+          }
+        },
+        {
+          "name": "1.5 Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Admin — Buat Data Awal (Genre, Author, Book)",
+      "item": [
+        {
+          "name": "2.1 Buat Genre (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Programming\",\n  \"description\": \"Buku seputar pemrograman dan teknologi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/genres",
+              "host": ["{{base_url}}"],
+              "path": ["api", "genres"]
+            },
+            "description": "Buat genre baru (diperlukan agar bisa membuat buku). Catat id-nya."
+          }
+        },
+        {
+          "name": "2.2 Buat Author (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Taylor Otwell\",\n  \"email\": \"taylor@laravel.com\",\n  \"country\": \"USA\",\n  \"bio\": \"Pencipta framework Laravel.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/authors",
+              "host": ["{{base_url}}"],
+              "path": ["api", "authors"]
+            },
+            "description": "Buat author baru (diperlukan agar bisa membuat buku). Catat id-nya."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. CRUD Transaksi",
+      "item": [
+        {
+          "name": "3.1 [CUSTOMER] Buat Transaksi — POST /api/transaksis",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"book_id\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transaksis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis"]
+            },
+            "description": "Customer membuat transaksi pembelian buku. Gunakan {{user_token}}. total_price dihitung otomatis."
+          }
+        },
+        {
+          "name": "3.2 [CUSTOMER] Lihat Detail Transaksi — GET /api/transaksis/1",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transaksis/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis", "1"]
+            },
+            "description": "Customer melihat detail transaksi miliknya. Response memuat relasi: user, book, author, genre."
+          }
+        },
+        {
+          "name": "3.3 [CUSTOMER] Update Status Transaksi — PUT /api/transaksis/1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"paid\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transaksis/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis", "1"]
+            },
+            "description": "Customer update status transaksi. Status: pending | paid | cancelled. Jika cancelled → stok dikembalikan."
+          }
+        },
+        {
+          "name": "3.4 [CUSTOMER] Cancel Transaksi (stok kembali)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transaksis/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis", "1"]
+            },
+            "description": "Cancel transaksi. Stok buku otomatis dikembalikan."
+          }
+        },
+        {
+          "name": "3.5 [ADMIN] Lihat Semua Transaksi — GET /api/transaksis",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transaksis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis"]
+            },
+            "description": "Hanya Admin yang bisa melihat semua transaksi. Response dengan relasi lengkap."
+          }
+        },
+        {
+          "name": "3.6 [ADMIN] Hapus Transaksi — DELETE /api/transaksis/1",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transaksis/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis", "1"]
+            },
+            "description": "Hanya Admin yang bisa menghapus transaksi."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Pengujian Middleware Transaksi",
+      "item": [
+        {
+          "name": "4.1 Buat Transaksi Tanpa Token → 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"book_id\": 1,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/transaksis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis"]
+            },
+            "description": "Harus menghasilkan 401 Unauthorized karena tidak ada token."
+          }
+        },
+        {
+          "name": "4.2 Lihat Semua Transaksi sebagai User → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transaksis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis"]
+            },
+            "description": "Harus menghasilkan 403 Forbidden karena user bukan admin."
+          }
+        },
+        {
+          "name": "4.3 Hapus Transaksi sebagai User → 403",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transaksis/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis", "1"]
+            },
+            "description": "Harus menghasilkan 403 Forbidden karena hanya admin yang bisa hapus."
+          }
+        },
+        {
+          "name": "4.4 Lihat Transaksi User Lain → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/transaksis/999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "transaksis", "999"]
+            },
+            "description": "Jika ID transaksi bukan milik customer ini → 403 Forbidden."
+          }
+        }
+      ]
+    }
+  ]
+}
